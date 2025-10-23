@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "256575880713",
+    "project_id": "sistem-informasi-tempat-403af",
+    "storage_bucket": "sistem-informasi-tempat-403af.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:256575880713:android:20b2d4c3a00a772a6cc2d8",
+        "android_client_info": {
+          "package_name": "com.example.sistem_informasi_tempat_wisata"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoJjwGGSAo-fJSGAN_0xQVjW3GZHqNB3Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
