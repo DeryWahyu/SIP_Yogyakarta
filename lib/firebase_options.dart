@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'sistem-informasi-tempat-403af.firebasestorage.app',
     measurementId: 'G-T1E3XJRSZ8',
   );
+
 }
