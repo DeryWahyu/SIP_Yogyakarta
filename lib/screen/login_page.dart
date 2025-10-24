@@ -29,6 +29,8 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // Di dalam file lib/screen/login_page.dart
+
   Future<void> _submitLogin() async {
     final isValid = _formKey.currentState!.validate();
     if (!isValid) {
@@ -41,8 +43,15 @@ class _LoginPageState extends State<LoginPage> {
     await authProvider.signIn(
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
-      onSuccess: () {
-        Navigator.of(context).pushReplacementNamed('/home');
+      onSuccess: (String role) { // <-- BARU: Menerima 'role'
+        // BARU: Logika pengecekan role
+        if (role == 'admin') {
+          // Jika admin, pergi ke dashboard
+          Navigator.of(context).pushReplacementNamed('/dashboard');
+        } else {
+          // Jika bukan admin (user biasa), pergi ke home
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
       },
       onError: (message) {
         _showErrorSnackBar(message);

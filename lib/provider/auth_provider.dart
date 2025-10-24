@@ -44,8 +44,12 @@
 // lib/provider/auth_provider.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+// BARU: Impor firestore
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 final _fireAuth = FirebaseAuth.instance;
+// BARU: Buat instance firestore
+final _firestore = FirebaseFirestore.instance;
 
 class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -56,7 +60,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Helper untuk pesan error yang lebih jelas
   String _mapErrorToMessage(String code) {
     switch (code) {
       case 'email-already-in-use':
@@ -78,19 +81,38 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signIn({
     required String email,
     required String password,
-    required VoidCallback onSuccess, // Callback jika sukses
-    required Function(String) onError,  // Callback jika error
+    // BARU: onSuccess sekarang mengembalikan String (role)
+    required Function(String role) onSuccess,
+    required Function(String) onError,
   }) async {
     _setLoading(true);
     try {
-      await _fireAuth.signInWithEmailAndPassword(
+      // 1. Login dengan Auth
+      final UserCredential userCredential =
+          await _fireAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      // Jika berhasil, panggil callback sukses
-      onSuccess();
+
+      // 2. Jika sukses, ambil data user dari Firestore
+      if (userCredential.user != null) {
+        final DocumentSnapshot userDoc = await _firestore
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .get();
+
+        // 3. Cek apakah dokumen ada dan punya role
+        if (userDoc.exists) {
+          final data = userDoc.data() as Map<String, dynamic>;
+          final String role = data['role'] ?? 'user'; // Default ke 'user' jika tidak ada
+          onSuccess(role); // Kirim role ke login page
+        } else {
+          // Kasus aneh: user ada di Auth tapi tidak di Firestore
+          // Kita anggap sebagai user biasa
+          onSuccess('user');
+        }
+      }
     } on FirebaseAuthException catch (e) {
-      // Jika error, panggil callback error dengan pesan
       onError(_mapErrorToMessage(e.code));
     } catch (e) {
       onError("Terjadi kesalahan, silakan coba lagi.");
@@ -102,19 +124,31 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signUp({
     required String email,
     required String password,
-    required VoidCallback onSuccess, // Callback jika sukses
-    required Function(String) onError,  // Callback jika error
+    required String nama, // BARU: Tambahkan parameter nama
+    required VoidCallback onSuccess,
+    required Function(String) onError,
   }) async {
     _setLoading(true);
     try {
-      await _fireAuth.createUserWithEmailAndPassword(
+      // 1. Buat user di Firebase Auth
+      final UserCredential userCredential =
+          await _fireAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      // Jika berhasil, panggil callback sukses
+
+      // 2. Jika sukses, simpan data user ke Firestore
+      if (userCredential.user != null) {
+        await _firestore.collection('users').doc(userCredential.user!.uid).set({
+          'uid': userCredential.user!.uid,
+          'nama': nama,
+          'email': email,
+          'role': 'user', // BARU: Tetapkan role default sebagai 'user'
+        });
+      }
+
       onSuccess();
     } on FirebaseAuthException catch (e) {
-      // Jika error, panggil callback error dengan pesan
       onError(_mapErrorToMessage(e.code));
     } catch (e) {
       onError("Terjadi kesalahan, silakan coba lagi.");

@@ -31,6 +31,8 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  // Di dalam file lib/screen/register_page.dart
+
   Future<void> _submitRegister() async {
     final isValid = _formKey.currentState!.validate();
     if (!isValid) {
@@ -43,6 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
     await authProvider.signUp(
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
+      nama: _namaController.text.trim(), // <-- BARU: Kirim nama
       onSuccess: () {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
