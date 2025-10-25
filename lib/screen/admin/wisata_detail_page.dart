@@ -6,7 +6,7 @@ class WisataDetailPage extends StatelessWidget {
   // Kita akan mengirim data dokumen dari halaman sebelumnya
   final DocumentSnapshot doc;
   
-  const WisataDetailPage({Key? key, required this.doc}) : super(key: key);
+  const WisataDetailPage({super.key, required this.doc});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,8 @@ class WisataDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(nama),
+        title: Text(nama, style: const TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: Colors.green.shade700,
       ),
       body: SingleChildScrollView(

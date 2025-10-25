@@ -76,7 +76,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      icon: const Icon(Icons.edit, color: Colors.green),
                       onPressed: () {
                         _showAddFormSheet(context, existingData: doc);
                       },
@@ -138,21 +138,21 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
     final bool isEdit = existingData != null;
     final String docId = isEdit ? existingData.id : '';
 
-    final _formKey = GlobalKey<FormState>();
-    final _namaController = TextEditingController();
-    final _deskripsiController = TextEditingController();
-    final _hargaController = TextEditingController();
-    final _lokasiController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    final namaController = TextEditingController();
+    final deskripsiController = TextEditingController();
+    final hargaController = TextEditingController();
+    final lokasiController = TextEditingController();
 
-    List<File> _newImages = []; 
-    bool _isLoading = false;
+    List<File> newImages = []; 
+    bool isLoading = false;
 
     if (isEdit) {
       final data = existingData.data() as Map<String, dynamic>;
-      _namaController.text = data['nama'] ?? '';
-      _deskripsiController.text = data['deskripsi'] ?? '';
-      _hargaController.text = data['harga'] ?? '';
-      _lokasiController.text = data['lokasi'] ?? '';
+      namaController.text = data['nama'] ?? '';
+      deskripsiController.text = data['deskripsi'] ?? '';
+      hargaController.text = data['harga'] ?? '';
+      lokasiController.text = data['lokasi'] ?? '';
     }
 
     showModalBottomSheet(
@@ -162,29 +162,29 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setStateModal) {
             
-            Future<void> _pickImages() async {
+            Future<void> pickImages() async {
               if(isEdit) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Edit gambar belum didukung. Hapus dan buat baru jika ingin ganti gambar.')),
                 );
                 return;
               }
-              final List<XFile>? pickedFiles = await _picker.pickMultiImage();
-              if (pickedFiles == null || pickedFiles.isEmpty) return;
+              final List<XFile> pickedFiles = await _picker.pickMultiImage();
+              if (pickedFiles.isEmpty) return;
               setStateModal(() {
-                _newImages = pickedFiles.map((xfile) => File(xfile.path)).toList();
+                newImages = pickedFiles.map((xfile) => File(xfile.path)).toList();
               });
             }
 
-            Future<void> _submitData() async {
-              if (!_formKey.currentState!.validate() || (!isEdit && _newImages.isEmpty)) {
+            Future<void> submitData() async {
+              if (!formKey.currentState!.validate() || (!isEdit && newImages.isEmpty)) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Harap isi semua field dan pilih minimal 1 gambar (saat menambah baru).')),
                 );
                 return;
               }
 
-              setStateModal(() => _isLoading = true);
+              setStateModal(() => isLoading = true);
 
               // GANTI dengan kredensial Cloudinary Anda
               final cloudinary = CloudinaryPublic(
@@ -195,15 +195,15 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
 
               try {
                 Map<String, dynamic> dataToSave = {
-                  'nama': _namaController.text,
-                  'deskripsi': _deskripsiController.text,
-                  'harga': _hargaController.text,
-                  'lokasi': _lokasiController.text,
+                  'nama': namaController.text,
+                  'deskripsi': deskripsiController.text,
+                  'harga': hargaController.text,
+                  'lokasi': lokasiController.text,
                 };
 
                 if (!isEdit) {
                   List<String> imageUrls = [];
-                  for (File imageFile in _newImages) {
+                  for (File imageFile in newImages) {
                     final response = await cloudinary.uploadFile(
                       CloudinaryFile.fromFile(
                         imageFile.path,
@@ -228,7 +228,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                   SnackBar(content: Text('Data berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}.')),
                 );
               } catch (e) {
-                setStateModal(() => _isLoading = false);
+                setStateModal(() => isLoading = false);
                 debugPrint('Error saat upload/simpan: $e');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Gagal menyimpan data: $e')),
@@ -243,7 +243,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
               ),
               child: SingleChildScrollView(
                 child: Form(
-                  key: _formKey,
+                  key: formKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     // --- PERBAIKAN: Menghapus 'crossAxisAlignment' yang duplikat ---
@@ -255,27 +255,27 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
-                        controller: _namaController,
+                        controller: namaController,
                         decoration: const InputDecoration(labelText: 'Nama Wisata', border: OutlineInputBorder()),
                         validator: (val) => val!.isEmpty ? 'Nama tidak boleh kosong' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: _deskripsiController,
+                        controller: deskripsiController,
                         decoration: const InputDecoration(labelText: 'Deskripsi', border: OutlineInputBorder()),
                         maxLines: 3,
                         validator: (val) => val!.isEmpty ? 'Deskripsi tidak boleh kosong' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: _hargaController,
+                        controller: hargaController,
                         decoration: const InputDecoration(labelText: 'Harga Tiket (cth: 25000 atau Gratis)', border: OutlineInputBorder()),
                         keyboardType: TextInputType.text,
                         validator: (val) => val!.isEmpty ? 'Harga tidak boleh kosong' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: _lokasiController,
+                        controller: lokasiController,
                         decoration: const InputDecoration(labelText: 'Lokasi (Alamat / Link Google Maps)', border: OutlineInputBorder()),
                         validator: (val) => val!.isEmpty ? 'Lokasi tidak boleh kosong' : null,
                       ),
@@ -287,19 +287,19 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                         OutlinedButton.icon(
                           icon: const Icon(Icons.image),
                           label: const Text('Pilih Gambar'),
-                          onPressed: _pickImages,
+                          onPressed: pickImages,
                         ),
-                        if (_newImages.isNotEmpty)
+                        if (newImages.isNotEmpty)
                           Container(
                             height: 100,
                             margin: const EdgeInsets.only(top: 8),
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: _newImages.length,
+                              itemCount: newImages.length,
                               itemBuilder: (context, index) {
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 8.0),
-                                  child: Image.file(_newImages[index], width: 100, height: 100, fit: BoxFit.cover),
+                                  child: Image.file(newImages[index], width: 100, height: 100, fit: BoxFit.cover),
                                 );
                               },
                             ),
@@ -314,12 +314,12 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                       const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,
-                        child: _isLoading
+                        child: isLoading
                             ? const Center(child: CircularProgressIndicator())
                             : ElevatedButton.icon(
                                 icon: const Icon(Icons.save),
                                 label: Text(isEdit ? 'Update' : 'Simpan'),
-                                onPressed: _submitData,
+                                onPressed: submitData,
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                 ),
@@ -341,7 +341,14 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kelola Tempat Wisata'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text(
+          'Kelola Tempat Wisata',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.green.shade700,
       ),
       body: _buildWisataList(),
@@ -350,6 +357,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
           _showAddFormSheet(context);
         },
         backgroundColor: Colors.green.shade700,
+        foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
     );

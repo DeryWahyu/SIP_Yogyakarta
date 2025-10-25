@@ -14,8 +14,13 @@ class _KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Data Pengguna'),
-        backgroundColor: Colors.purple.shade700,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          'Data Pengguna',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.green.shade700,
       ),
       // Gunakan StreamBuilder untuk menampilkan data user secara real-time
       body: StreamBuilder<QuerySnapshot>(
