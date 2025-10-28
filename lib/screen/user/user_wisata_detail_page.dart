@@ -13,10 +13,10 @@ class UserWisataDetailPage extends StatefulWidget {
   final Function(int) onNavTapped; 
   
   const UserWisataDetailPage({
-    Key? key, 
+    super.key, 
     required this.doc, 
     required this.onNavTapped, 
-  }) : super(key: key);
+  });
 
   @override
   State<UserWisataDetailPage> createState() => _UserWisataDetailPageState();
@@ -95,18 +95,26 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
   }
 
   Future<void> _launchGoogleMaps(double latitude, double longitude) async {
-    final String googleMapsUrl = 'http://googleusercontent.com/maps/dir/?api=1&destination=$latitude,$longitude';
+    
+    // --- FIX 1: Ini adalah URL yang BENAR untuk rute ---
+    final String googleMapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude';
     final Uri uri = Uri.parse(googleMapsUrl);
+
+    // Cek apakah bisa membuka URL
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
+      
+      // --- FIX 2: Cek 'mounted' untuk mengatasi peringatan async gap ---
+      // Ini memastikan widget masih ada di layar sebelum menampilkan SnackBar
       if (!context.mounted) return; 
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tidak bisa membuka Google Maps.')),
+        const SnackBar(content: Text('Tidak bisa membuka Google Maps. Pastikan sudah ter-install.')),
       );
     }
   }
-
+  
   @override
   Widget build(BuildContext context) {
     // ... (Pengambilan data tidak berubah) ...
@@ -242,7 +250,7 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
                     ),
                   Transform.translate(
                     offset: const Offset( 35, 0),
-                    child: Text('Rp. ${harga}', style: const TextStyle(fontSize: 16, color: Colors.green)),
+                    child: Text('Rp. $harga', style: const TextStyle(fontSize: 16, color: Colors.green)),
                   ),
                   
                   const SizedBox(height: 16),

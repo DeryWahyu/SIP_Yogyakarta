@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 class WisataDetailPage extends StatefulWidget {
   final DocumentSnapshot doc;
   
-  const WisataDetailPage({Key? key, required this.doc}) : super(key: key);
+  const WisataDetailPage({super.key, required this.doc});
 
   @override
   State<WisataDetailPage> createState() => _WisataDetailPageState();
@@ -135,7 +135,7 @@ class _WisataDetailPageState extends State<WisataDetailPage> {
                   
                   const SizedBox(height: 16),
                   _buildSectionTitle('Harga Tiket'),
-                  Text('Rp. ${harga}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green)),
+                  Text('Rp. $harga', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green)),
                   
                   // --- TAMBAHAN BARU ---
                   const SizedBox(height: 16),

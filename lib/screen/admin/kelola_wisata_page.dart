@@ -135,34 +135,34 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
     final bool isEdit = existingData != null;
     final String docId = isEdit ? existingData.id : '';
 
-    final _formKey = GlobalKey<FormState>();
-    final _namaController = TextEditingController();
-    final _deskripsiController = TextEditingController();
-    final _hargaController = TextEditingController();
-    final _lokasiAlamatController = TextEditingController(); 
-    final _latitudeController = TextEditingController();
-    final _longitudeController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    final namaController = TextEditingController();
+    final deskripsiController = TextEditingController();
+    final hargaController = TextEditingController();
+    final lokasiAlamatController = TextEditingController(); 
+    final latitudeController = TextEditingController();
+    final longitudeController = TextEditingController();
     
     // --- TAMBAHAN BARU ---
-    final _hariBukaController = TextEditingController();
-    final _jamOperasionalController = TextEditingController();
+    final hariBukaController = TextEditingController();
+    final jamOperasionalController = TextEditingController();
     // --- AKHIR TAMBAHAN ---
 
-    List<File> _newImages = []; 
-    bool _isLoading = false;
+    List<File> newImages = []; 
+    bool isLoading = false;
 
     if (isEdit) {
       final data = existingData.data() as Map<String, dynamic>;
-      _namaController.text = data['nama'] ?? '';
-      _deskripsiController.text = data['deskripsi'] ?? '';
-      _hargaController.text = data['harga'] ?? '';
-      _lokasiAlamatController.text = data['lokasi'] ?? ''; 
-      _latitudeController.text = (data['latitude'] ?? 0.0).toString();
-      _longitudeController.text = (data['longitude'] ?? 0.0).toString();
+      namaController.text = data['nama'] ?? '';
+      deskripsiController.text = data['deskripsi'] ?? '';
+      hargaController.text = data['harga'] ?? '';
+      lokasiAlamatController.text = data['lokasi'] ?? ''; 
+      latitudeController.text = (data['latitude'] ?? 0.0).toString();
+      longitudeController.text = (data['longitude'] ?? 0.0).toString();
       
       // --- TAMBAHAN BARU ---
-      _hariBukaController.text = data['hariBuka'] ?? '';
-      _jamOperasionalController.text = data['jamOperasional'] ?? '';
+      hariBukaController.text = data['hariBuka'] ?? '';
+      jamOperasionalController.text = data['jamOperasional'] ?? '';
       // --- AKHIR TAMBAHAN ---
     }
 
@@ -173,7 +173,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setStateModal) {
             
-            Future<void> _pickImages() async {
+            Future<void> pickImages() async {
               // ... (Fungsi _pickImages TIDAK BERUBAH) ...
               if(isEdit) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -181,19 +181,19 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                 );
                 return;
               }
-              final List<XFile>? pickedFiles = await _picker.pickMultiImage();
-              if (pickedFiles == null || pickedFiles.isEmpty) return;
+              final List<XFile> pickedFiles = await _picker.pickMultiImage();
+              if (pickedFiles.isEmpty) return;
               setStateModal(() {
-                _newImages = pickedFiles.map((xfile) => File(xfile.path)).toList();
+                newImages = pickedFiles.map((xfile) => File(xfile.path)).toList();
               });
             }
 
-            Future<void> _submitData() async {
-              if (!_formKey.currentState!.validate() || (!isEdit && _newImages.isEmpty)) {
+            Future<void> submitData() async {
+              if (!formKey.currentState!.validate() || (!isEdit && newImages.isEmpty)) {
                 return;
               }
 
-              setStateModal(() => _isLoading = true);
+              setStateModal(() => isLoading = true);
 
               final cloudinary = CloudinaryPublic(
                 'do1f1njjy', // GANTI JIKA BEDA
@@ -202,27 +202,27 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
               );
 
               try {
-                final double latitude = double.tryParse(_latitudeController.text) ?? 0.0;
-                final double longitude = double.tryParse(_longitudeController.text) ?? 0.0;
+                final double latitude = double.tryParse(latitudeController.text) ?? 0.0;
+                final double longitude = double.tryParse(longitudeController.text) ?? 0.0;
 
                 Map<String, dynamic> dataToSave = {
-                  'nama': _namaController.text,
-                  'deskripsi': _deskripsiController.text,
-                  'harga': _hargaController.text,
-                  'lokasi': _lokasiAlamatController.text,
+                  'nama': namaController.text,
+                  'deskripsi': deskripsiController.text,
+                  'harga': hargaController.text,
+                  'lokasi': lokasiAlamatController.text,
                   'latitude': latitude,
                   'longitude': longitude,
                   
                   // --- TAMBAHAN BARU ---
-                  'hariBuka': _hariBukaController.text,
-                  'jamOperasional': _jamOperasionalController.text,
+                  'hariBuka': hariBukaController.text,
+                  'jamOperasional': jamOperasionalController.text,
                   // --- AKHIR TAMBAHAN ---
                 };
 
                 if (!isEdit) {
                   // ... (Logika upload gambar TIDAK BERUBAH) ...
                   List<String> imageUrls = [];
-                  for (File imageFile in _newImages) {
+                  for (File imageFile in newImages) {
                     final response = await cloudinary.uploadFile(
                       CloudinaryFile.fromFile(
                         imageFile.path,
@@ -247,7 +247,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                   SnackBar(content: Text('Data berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}.')),
                 );
               } catch (e) {
-                setStateModal(() => _isLoading = false);
+                setStateModal(() => isLoading = false);
                 debugPrint('Error saat upload/simpan: $e');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Gagal menyimpan data: $e')),
@@ -262,7 +262,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
               ),
               child: SingleChildScrollView(
                 child: Form(
-                  key: _formKey,
+                  key: formKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,20 +273,20 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
-                        controller: _namaController,
+                        controller: namaController,
                         decoration: const InputDecoration(labelText: 'Nama Wisata', border: OutlineInputBorder()),
                         validator: (val) => val!.isEmpty ? 'Nama tidak boleh kosong' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: _deskripsiController,
+                        controller: deskripsiController,
                         decoration: const InputDecoration(labelText: 'Deskripsi', border: OutlineInputBorder()),
                         maxLines: 3,
                         validator: (val) => val!.isEmpty ? 'Deskripsi tidak boleh kosong' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: _hargaController,
+                        controller: hargaController,
                         decoration: const InputDecoration(labelText: 'Harga Tiket (cth: 50000)', border: OutlineInputBorder()),
                         keyboardType: TextInputType.number,
                         validator: (val) => val!.isEmpty ? 'Harga tidak boleh kosong' : null,
@@ -295,13 +295,13 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                       // --- TAMBAHAN BARU ---
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: _hariBukaController,
+                        controller: hariBukaController,
                         decoration: const InputDecoration(labelText: 'Hari Buka (cth: Senin - Minggu)', border: OutlineInputBorder()),
                         validator: (val) => val!.isEmpty ? 'Hari buka tidak boleh kosong' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: _jamOperasionalController,
+                        controller: jamOperasionalController,
                         decoration: const InputDecoration(labelText: 'Jam Operasional (cth: 08:00 - 17:00)', border: OutlineInputBorder()),
                         validator: (val) => val!.isEmpty ? 'Jam operasional tidak boleh kosong' : null,
                       ),
@@ -309,7 +309,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                       
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: _lokasiAlamatController,
+                        controller: lokasiAlamatController,
                         decoration: const InputDecoration(labelText: 'Alamat Singkat (cth: Yogyakarta)', border: OutlineInputBorder()),
                         validator: (val) => val!.isEmpty ? 'Alamat singkat tidak boleh kosong' : null,
                       ),
@@ -318,7 +318,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                         children: [
                           Expanded(
                             child: TextFormField(
-                              controller: _latitudeController,
+                              controller: latitudeController,
                               decoration: const InputDecoration(labelText: 'Latitude', border: OutlineInputBorder()),
                               keyboardType: TextInputType.numberWithOptions(decimal: true, signed: true),
                               validator: (val) => val!.isEmpty ? 'Wajib diisi' : null,
@@ -327,7 +327,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: TextFormField(
-                              controller: _longitudeController,
+                              controller: longitudeController,
                               decoration: const InputDecoration(labelText: 'Longitude', border: OutlineInputBorder()),
                               keyboardType: TextInputType.numberWithOptions(decimal: true, signed: true),
                               validator: (val) => val!.isEmpty ? 'Wajib diisi' : null,
@@ -350,19 +350,19 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                         OutlinedButton.icon(
                           icon: const Icon(Icons.image),
                           label: const Text('Pilih Gambar'),
-                          onPressed: _pickImages,
+                          onPressed: pickImages,
                         ),
-                        if (_newImages.isNotEmpty)
+                        if (newImages.isNotEmpty)
                           Container(
                             height: 100,
                             margin: const EdgeInsets.only(top: 8),
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: _newImages.length,
+                              itemCount: newImages.length,
                               itemBuilder: (context, index) {
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 8.0),
-                                  child: Image.file(_newImages[index], width: 100, height: 100, fit: BoxFit.cover),
+                                  child: Image.file(newImages[index], width: 100, height: 100, fit: BoxFit.cover),
                                 );
                               },
                             ),
@@ -377,12 +377,12 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                       const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,
-                        child: _isLoading
+                        child: isLoading
                             ? const Center(child: CircularProgressIndicator())
                             : ElevatedButton.icon(
                                 icon: const Icon(Icons.save),
                                 label: Text(isEdit ? 'Update' : 'Simpan'),
-                                onPressed: _submitData,
+                                onPressed: submitData,
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                 ),

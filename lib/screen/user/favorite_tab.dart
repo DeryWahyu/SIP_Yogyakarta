@@ -159,7 +159,7 @@ class _FavoriteTabState extends State<FavoriteTab> {
               padding: const EdgeInsets.all(12),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2, 
-                childAspectRatio: 0.75, 
+                childAspectRatio: 1.3, 
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
               ),
