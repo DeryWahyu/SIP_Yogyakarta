@@ -1,27 +1,34 @@
 // lib/screen/home_page.dart
+
 import 'package:flutter/material.dart';
 import 'user/home_tab.dart';
 import 'user/search_tab.dart';
 import 'user/favorite_tab.dart';
 import 'user/profile_tab.dart';
-
+// --- IMPOR BARU ---
+import 'package:sistem_informasi_tempat_wisata/widgets/custom_bottom_nav_bar.dart'; 
+// (Sesuaikan 'sistem_informasi_tempat_wisata' dengan nama paket Anda jika beda)
+// --- AKHIR IMPOR BARU ---
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0; // Indeks tab yang sedang aktif
-
-  // Daftar halaman/tab
-  static const List<Widget> _widgetOptions = <Widget>[
-    HomeTab(),
-    SearchTab(),
-    FavoriteTab(),
-    ProfileTab(),
-  ];
+  int _selectedIndex = 0; 
+  late final List<Widget> _widgetOptions; 
+  @override
+  void initState() {
+    super.initState();
+    // Kita panggil _onItemTapped DARI SINI
+    _widgetOptions = <Widget>[
+      HomeTab(onNavTapped: _onItemTapped),
+      SearchTab(), 
+      FavoriteTab(), // Kita tidak perlu onNavTapped di sini lagi
+      ProfileTab(), 
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -29,65 +36,63 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // --- BARU: Buat daftar AppBar untuk setiap tab ---
+  static final List<PreferredSizeWidget?> _appBarOptions = <PreferredSizeWidget?>[
+    null, // Tab 0 (HomeTab) tidak punya AppBar
+    null, // Tab 1 (SearchTab) tidak punya AppBar
+    // Tab 2 (FavoriteTab) punya AppBar
+    PreferredSize(
+      preferredSize: Size.fromHeight(kToolbarHeight),
+      child: AppBar(
+        title: Text('Wisata Favorit Saya'),
+        backgroundColor: Colors.white,
+        elevation: 1.0,
+      ),
+    ),
+    // Tab 3 (ProfileTab) punya AppBar
+    PreferredSize(
+      preferredSize: Size.fromHeight(kToolbarHeight),
+      child: AppBar(
+        title: Text('Profil Saya'),
+        backgroundColor: Colors.white,
+        elevation: 1.0,
+      ),
+    ),
+  ];
+  // --- AKHIR BARU ---
+
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // Body akan menampilkan tab yang dipilih
-      body: IndexedStack( // IndexedStack menjaga state setiap tab
-        index: _selectedIndex,
-        children: _widgetOptions,
-      ),
+    // --- GANTI TOTAL ---
+    // Kita gunakan DefaultTabController agar bisa memanggil 
+    // _onItemTapped dari dalam FavoriteTab
+    return DefaultTabController(
+      length: 4,
+      child: Builder(
+        builder: (context) {
+          // Kita tambahkan listener agar bisa dipanggil dari FavoriteTab
+          final TabController tabController = DefaultTabController.of(context);
+          tabController.addListener(() {
+            if (!tabController.indexIsChanging) {
+              _onItemTapped(tabController.index);
+            }
+          });
 
-      // --- BOTTOM NAVIGATION BAR (Sesuai Desain) ---
-      // Kita bungkus dengan Stack agar bisa "mengambang"
-      bottomNavigationBar: _buildCustomBottomNav(),
-    );
-  }
-
-  Widget _buildCustomBottomNav() {
-    // Tampilan bottom nav bar kustom
-    return Container(
-      // Kita beri padding agar "mengambang"
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      // Kita pakai Stack agar bisa menempatkan bar di atas konten
-      child: Container(
-        height: 70, // Tinggi bar
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(35), // Bentuk pil
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Icons.home, 'Home', 0),
-            _buildNavItem(Icons.search, 'Search', 1),
-            _buildNavItem(Icons.favorite, 'Favorite', 2),
-            _buildNavItem(Icons.person, 'Profile', 3),
-          ],
-        ),
+          return Scaffold(
+            // Tampilkan AppBar yang sesuai
+            appBar: _appBarOptions[_selectedIndex],
+            // Tampilkan Body yang sesuai
+            body: _widgetOptions[_selectedIndex],
+            // Tampilkan Navbar Kustom
+            bottomNavigationBar: CustomBottomNavBar(
+              selectedIndex: _selectedIndex,
+              onItemTapped: _onItemTapped,
+            ), 
+          );
+        }
       ),
     );
-  }
-
-  // Widget helper untuk setiap ikon di nav bar
-  Widget _buildNavItem(IconData icon, String label, int index) {
-    final bool isSelected = _selectedIndex == index;
-    final Color color = isSelected ? Colors.green.shade700 : Colors.grey.shade400;
-
-    return InkWell(
-      onTap: () => _onItemTapped(index),
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Icon(icon, color: color, size: 28),
-      ),
-    );
+    // --- AKHIR GANTI TOTAL ---
   }
 }

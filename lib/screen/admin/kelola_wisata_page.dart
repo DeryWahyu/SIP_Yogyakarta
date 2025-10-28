@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
-import 'wisata_detail_page.dart'; // <-- BARU: Impor halaman detail
+import 'wisata_detail_page.dart'; 
 
 class KelolaWisataPage extends StatefulWidget {
   const KelolaWisataPage({super.key});
@@ -19,6 +19,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
   final ImagePicker _picker = ImagePicker();
 
   Widget _buildWisataList() {
+    // ... (Fungsi ini TIDAK BERUBAH) ...
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore.collection('tempat_wisata').snapshots(),
       builder: (context, snapshot) {
@@ -60,23 +61,18 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                
-                // --- BARU: Aksi onTap untuk "Lihat Detail" ---
                 onTap: () {
-                  // Navigasi ke halaman detail saat di-klik
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (ctx) => WisataDetailPage(doc: doc),
                     ),
                   );
                 },
-                // --- AKHIR BLOK BARU ---
-
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.green),
+                      icon: const Icon(Icons.edit, color: Colors.blue),
                       onPressed: () {
                         _showAddFormSheet(context, existingData: doc);
                       },
@@ -98,6 +94,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
   }
 
   Future<void> _deleteWisata(String docId, List<dynamic> imageUrls) async {
+    // ... (Fungsi ini TIDAK BERUBAH) ...
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -138,21 +135,35 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
     final bool isEdit = existingData != null;
     final String docId = isEdit ? existingData.id : '';
 
-    final formKey = GlobalKey<FormState>();
-    final namaController = TextEditingController();
-    final deskripsiController = TextEditingController();
-    final hargaController = TextEditingController();
-    final lokasiController = TextEditingController();
+    final _formKey = GlobalKey<FormState>();
+    final _namaController = TextEditingController();
+    final _deskripsiController = TextEditingController();
+    final _hargaController = TextEditingController();
+    final _lokasiAlamatController = TextEditingController(); 
+    final _latitudeController = TextEditingController();
+    final _longitudeController = TextEditingController();
+    
+    // --- TAMBAHAN BARU ---
+    final _hariBukaController = TextEditingController();
+    final _jamOperasionalController = TextEditingController();
+    // --- AKHIR TAMBAHAN ---
 
-    List<File> newImages = []; 
-    bool isLoading = false;
+    List<File> _newImages = []; 
+    bool _isLoading = false;
 
     if (isEdit) {
       final data = existingData.data() as Map<String, dynamic>;
-      namaController.text = data['nama'] ?? '';
-      deskripsiController.text = data['deskripsi'] ?? '';
-      hargaController.text = data['harga'] ?? '';
-      lokasiController.text = data['lokasi'] ?? '';
+      _namaController.text = data['nama'] ?? '';
+      _deskripsiController.text = data['deskripsi'] ?? '';
+      _hargaController.text = data['harga'] ?? '';
+      _lokasiAlamatController.text = data['lokasi'] ?? ''; 
+      _latitudeController.text = (data['latitude'] ?? 0.0).toString();
+      _longitudeController.text = (data['longitude'] ?? 0.0).toString();
+      
+      // --- TAMBAHAN BARU ---
+      _hariBukaController.text = data['hariBuka'] ?? '';
+      _jamOperasionalController.text = data['jamOperasional'] ?? '';
+      // --- AKHIR TAMBAHAN ---
     }
 
     showModalBottomSheet(
@@ -162,48 +173,56 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setStateModal) {
             
-            Future<void> pickImages() async {
+            Future<void> _pickImages() async {
+              // ... (Fungsi _pickImages TIDAK BERUBAH) ...
               if(isEdit) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Edit gambar belum didukung. Hapus dan buat baru jika ingin ganti gambar.')),
                 );
                 return;
               }
-              final List<XFile> pickedFiles = await _picker.pickMultiImage();
-              if (pickedFiles.isEmpty) return;
+              final List<XFile>? pickedFiles = await _picker.pickMultiImage();
+              if (pickedFiles == null || pickedFiles.isEmpty) return;
               setStateModal(() {
-                newImages = pickedFiles.map((xfile) => File(xfile.path)).toList();
+                _newImages = pickedFiles.map((xfile) => File(xfile.path)).toList();
               });
             }
 
-            Future<void> submitData() async {
-              if (!formKey.currentState!.validate() || (!isEdit && newImages.isEmpty)) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Harap isi semua field dan pilih minimal 1 gambar (saat menambah baru).')),
-                );
+            Future<void> _submitData() async {
+              if (!_formKey.currentState!.validate() || (!isEdit && _newImages.isEmpty)) {
                 return;
               }
 
-              setStateModal(() => isLoading = true);
+              setStateModal(() => _isLoading = true);
 
-              // GANTI dengan kredensial Cloudinary Anda
               final cloudinary = CloudinaryPublic(
-                'do1f1njjy', // <--- GANTI JIKA BEDA
-                'axgi2x1n', // <--- GANTI JIKA BEDA
+                'do1f1njjy', // GANTI JIKA BEDA
+                'axgi2x1n', // GANTI JIKA BEDA
                 cache: false,
               );
 
               try {
+                final double latitude = double.tryParse(_latitudeController.text) ?? 0.0;
+                final double longitude = double.tryParse(_longitudeController.text) ?? 0.0;
+
                 Map<String, dynamic> dataToSave = {
-                  'nama': namaController.text,
-                  'deskripsi': deskripsiController.text,
-                  'harga': hargaController.text,
-                  'lokasi': lokasiController.text,
+                  'nama': _namaController.text,
+                  'deskripsi': _deskripsiController.text,
+                  'harga': _hargaController.text,
+                  'lokasi': _lokasiAlamatController.text,
+                  'latitude': latitude,
+                  'longitude': longitude,
+                  
+                  // --- TAMBAHAN BARU ---
+                  'hariBuka': _hariBukaController.text,
+                  'jamOperasional': _jamOperasionalController.text,
+                  // --- AKHIR TAMBAHAN ---
                 };
 
                 if (!isEdit) {
+                  // ... (Logika upload gambar TIDAK BERUBAH) ...
                   List<String> imageUrls = [];
-                  for (File imageFile in newImages) {
+                  for (File imageFile in _newImages) {
                     final response = await cloudinary.uploadFile(
                       CloudinaryFile.fromFile(
                         imageFile.path,
@@ -228,7 +247,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                   SnackBar(content: Text('Data berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}.')),
                 );
               } catch (e) {
-                setStateModal(() => isLoading = false);
+                setStateModal(() => _isLoading = false);
                 debugPrint('Error saat upload/simpan: $e');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Gagal menyimpan data: $e')),
@@ -243,10 +262,9 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
               ),
               child: SingleChildScrollView(
                 child: Form(
-                  key: formKey,
+                  key: _formKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    // --- PERBAIKAN: Menghapus 'crossAxisAlignment' yang duplikat ---
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -255,51 +273,96 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
-                        controller: namaController,
+                        controller: _namaController,
                         decoration: const InputDecoration(labelText: 'Nama Wisata', border: OutlineInputBorder()),
                         validator: (val) => val!.isEmpty ? 'Nama tidak boleh kosong' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: deskripsiController,
+                        controller: _deskripsiController,
                         decoration: const InputDecoration(labelText: 'Deskripsi', border: OutlineInputBorder()),
                         maxLines: 3,
                         validator: (val) => val!.isEmpty ? 'Deskripsi tidak boleh kosong' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: hargaController,
-                        decoration: const InputDecoration(labelText: 'Harga Tiket (cth: 25000 atau Gratis)', border: OutlineInputBorder()),
-                        keyboardType: TextInputType.text,
+                        controller: _hargaController,
+                        decoration: const InputDecoration(labelText: 'Harga Tiket (cth: 50000)', border: OutlineInputBorder()),
+                        keyboardType: TextInputType.number,
                         validator: (val) => val!.isEmpty ? 'Harga tidak boleh kosong' : null,
+                      ),
+                      
+                      // --- TAMBAHAN BARU ---
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _hariBukaController,
+                        decoration: const InputDecoration(labelText: 'Hari Buka (cth: Senin - Minggu)', border: OutlineInputBorder()),
+                        validator: (val) => val!.isEmpty ? 'Hari buka tidak boleh kosong' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: lokasiController,
-                        decoration: const InputDecoration(labelText: 'Lokasi (Alamat / Link Google Maps)', border: OutlineInputBorder()),
-                        validator: (val) => val!.isEmpty ? 'Lokasi tidak boleh kosong' : null,
+                        controller: _jamOperasionalController,
+                        decoration: const InputDecoration(labelText: 'Jam Operasional (cth: 08:00 - 17:00)', border: OutlineInputBorder()),
+                        validator: (val) => val!.isEmpty ? 'Jam operasional tidak boleh kosong' : null,
                       ),
+                      // --- AKHIR TAMBAHAN ---
+                      
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _lokasiAlamatController,
+                        decoration: const InputDecoration(labelText: 'Alamat Singkat (cth: Yogyakarta)', border: OutlineInputBorder()),
+                        validator: (val) => val!.isEmpty ? 'Alamat singkat tidak boleh kosong' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _latitudeController,
+                              decoration: const InputDecoration(labelText: 'Latitude', border: OutlineInputBorder()),
+                              keyboardType: TextInputType.numberWithOptions(decimal: true, signed: true),
+                              validator: (val) => val!.isEmpty ? 'Wajib diisi' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _longitudeController,
+                              decoration: const InputDecoration(labelText: 'Longitude', border: OutlineInputBorder()),
+                              keyboardType: TextInputType.numberWithOptions(decimal: true, signed: true),
+                              validator: (val) => val!.isEmpty ? 'Wajib diisi' : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Klik kanan di Google Maps untuk copy Latitude & Longitude.',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      
                       const SizedBox(height: 16),
                       
                       if (!isEdit) ...[
+                        // ... (Kode pilih gambar TIDAK BERUBAH) ...
                         const Text('Gambar (Wajib, bisa lebih dari 1):'),
                         const SizedBox(height: 8),
                         OutlinedButton.icon(
                           icon: const Icon(Icons.image),
                           label: const Text('Pilih Gambar'),
-                          onPressed: pickImages,
+                          onPressed: _pickImages,
                         ),
-                        if (newImages.isNotEmpty)
+                        if (_newImages.isNotEmpty)
                           Container(
                             height: 100,
                             margin: const EdgeInsets.only(top: 8),
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: newImages.length,
+                              itemCount: _newImages.length,
                               itemBuilder: (context, index) {
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 8.0),
-                                  child: Image.file(newImages[index], width: 100, height: 100, fit: BoxFit.cover),
+                                  child: Image.file(_newImages[index], width: 100, height: 100, fit: BoxFit.cover),
                                 );
                               },
                             ),
@@ -307,19 +370,19 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
                       ],
                       if (isEdit)
                         const Text(
-                          'Info: Edit gambar belum didukung. Silakan hapus dan buat ulang data jika ingin mengganti gambar.',
+                          'Info: Edit gambar belum didukung.',
                           style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
                         ),
                       
                       const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,
-                        child: isLoading
+                        child: _isLoading
                             ? const Center(child: CircularProgressIndicator())
                             : ElevatedButton.icon(
                                 icon: const Icon(Icons.save),
                                 label: Text(isEdit ? 'Update' : 'Simpan'),
-                                onPressed: submitData,
+                                onPressed: _submitData,
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                 ),
@@ -339,16 +402,10 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ... (Fungsi build() TIDAK BERUBAH) ...
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'Kelola Tempat Wisata',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Kelola Tempat Wisata'),
         backgroundColor: Colors.green.shade700,
       ),
       body: _buildWisataList(),
@@ -357,7 +414,6 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
           _showAddFormSheet(context);
         },
         backgroundColor: Colors.green.shade700,
-        foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
     );

@@ -2,52 +2,65 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// Impor halaman detail yang sudah kita buat
-import '../admin/wisata_detail_page.dart'; 
-import '../admin/artikel_detail_page.dart';
+import 'user_wisata_detail_page.dart'; 
+import '../admin/artikel_detail_page.dart'; 
 
 class HomeTab extends StatelessWidget {
-  const HomeTab({super.key});
+  final Function(int) onNavTapped;
+  const HomeTab({super.key, required this.onNavTapped});
 
-  // Daftar gambar header dari assets
-  static const List<String> headerImages = [
+  final List<String> headerImages = const [
     'assets/images/header1.jpg',
     'assets/images/header2.jpg',
     'assets/images/header3.jpg',
-    // Pastikan Anda sudah menambahkan file-file ini di pubspec.yaml
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // Kita pakai SingleChildScrollView agar halaman bisa di-scroll ke bawah
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --- 1. HEADER CAROUSEL (Slide Otomatis) ---
-            _buildHeaderCarousel(),
-
-            // --- 2. SEARCH BAR ---
-            _buildSearchBar(context),
-
-            // --- 3. REKOMENDASI WISATA (Horizontal Slide) ---
-            _buildSectionHeader(context, 'Rekomendasi Wisata'),
-            _buildWisataList(context),
-
-            // --- 4. ARTIKEL (Horizontal Slide) ---
-            _buildSectionHeader(context, 'Artikel'),
-            _buildArtikelList(context),
-            
-            const SizedBox(height: 100), // Beri jarak dari bottom nav bar
-          ],
-        ),
+    // --- HAPUS SCAFFOLD WRAPPER ---
+    // return Scaffold(
+    //   body: SingleChildScrollView(...),
+    // );
+    // --- GANTI HANYA MERETURN SINGLECHILDSCROLLVIEW ---
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
+            child: _buildHeaderCarousel(),
+          ),
+          _buildSearchBar(context),
+            Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+            child: Text(
+              'Rekomendasi Wisata',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+                ),
+            ),
+            ),
+          _buildWisataList(context),
+            Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+            child: Text(
+              'Artikel',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.green,
+              ),
+            ),
+            ),
+          _buildArtikelList(context),
+          const SizedBox(height: 100), 
+        ],
       ),
     );
+    // --- AKHIR PERUBAHAN ---
   }
 
-  // --- WIDGET UNTUK SETIAP BAGIAN ---
-
+  // ... (Fungsi _buildHeaderCarousel, _buildSearchBar, _buildSectionHeader tidak berubah) ...
   Widget _buildHeaderCarousel() {
     return CarouselSlider.builder(
       itemCount: headerImages.length,
@@ -62,7 +75,7 @@ class HomeTab extends StatelessWidget {
         height: 250,
         autoPlay: true,
         autoPlayInterval: const Duration(seconds: 4),
-        viewportFraction: 1.0, // Tampilkan 1 gambar penuh
+        viewportFraction: 1.0, 
         enlargeCenterPage: false,
       ),
     );
@@ -70,12 +83,13 @@ class HomeTab extends StatelessWidget {
 
   Widget _buildSearchBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      // naikkan top padding sedikit agar search bar "turun ke bawah"
+      padding: const EdgeInsets.fromLTRB(20, 40, 20, 16),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(35),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.2),
@@ -88,30 +102,19 @@ class HomeTab extends StatelessWidget {
         child: const TextField(
           decoration: InputDecoration(
             hintText: 'Cari Tempat Wisata Favoritmu',
+            hintStyle: TextStyle(color: Colors.green),
             border: InputBorder.none,
-            icon: Icon(Icons.search, color: Colors.grey),
+            icon: Icon(Icons.search, color: Colors.green),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-      ),
-    );
-  }
-
-  // --- Ambil Data Wisata dari Firestore ---
   Widget _buildWisataList(BuildContext context) {
+    // ... (Fungsi _buildWisataList TIDAK BERUBAH) ...
     return SizedBox(
-      height: 220, // Tentukan tinggi untuk list horizontal
+      height: 220, 
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('tempat_wisata').snapshots(),
         builder: (context, snapshot) {
@@ -134,7 +137,7 @@ class HomeTab extends StatelessWidget {
               var imageUrls = data['imageUrls'] as List?;
               String imageUrl = (imageUrls != null && imageUrls.isNotEmpty)
                   ? imageUrls[0]
-                  : ''; // Ambil gambar pertama
+                  : ''; 
 
               return _buildWisataCard(
                 context,
@@ -142,10 +145,10 @@ class HomeTab extends StatelessWidget {
                 description: data['deskripsi'] ?? 'Tanpa Deskripsi',
                 imageUrl: imageUrl,
                 onTap: () {
-                  // Pindah ke Halaman Detail Wisata
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (ctx) => WisataDetailPage(doc: doc),
+                      // Kita teruskan fungsi onNavTapped
+                      builder: (ctx) => UserWisataDetailPage(doc: doc, onNavTapped: onNavTapped),
                     ),
                   );
                 },
@@ -157,10 +160,10 @@ class HomeTab extends StatelessWidget {
     );
   }
 
-  // --- Ambil Data Artikel dari Firestore ---
   Widget _buildArtikelList(BuildContext context) {
+    // ... (Fungsi _buildArtikelList TIDAK BERUBAH) ...
     return SizedBox(
-      height: 160, // Tentukan tinggi untuk list horizontal
+      height: 160, 
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('artikel').snapshots(),
         builder: (context, snapshot) {
@@ -188,7 +191,6 @@ class HomeTab extends StatelessWidget {
                 description: data['deskripsi'] ?? 'Tanpa Deskripsi',
                 imageUrl: imageUrl,
                 onTap: () {
-                  // Pindah ke Halaman Detail Artikel
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (ctx) => ArtikelDetailPage(doc: doc),
@@ -203,8 +205,8 @@ class HomeTab extends StatelessWidget {
     );
   }
   
-  // --- Card UI untuk Wisata (Mirip desain Anda) ---
   Widget _buildWisataCard(BuildContext context, {required String title, required String description, required String imageUrl, required VoidCallback onTap}) {
+    // ... (Fungsi _buildWisataCard TIDAK BERUBAH) ...
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -259,12 +261,12 @@ class HomeTab extends StatelessWidget {
     );
   }
 
-  // --- Card UI untuk Artikel (Mirip desain Anda) ---
   Widget _buildArtikelCard(BuildContext context, {required String title, required String description, required String imageUrl, required VoidCallback onTap}) {
+    // ... (Fungsi _buildArtikelCard TIDAK BERUBAH) ...
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 250, // Artikel card lebih lebar
+        width: 250, 
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -287,7 +289,8 @@ class HomeTab extends StatelessWidget {
                 height: double.infinity,
                 width: 100,
                 fit: BoxFit.cover,
-                errorBuilder: (ctx, err, stack) => Container(width: 100, color: Colors.grey[200], child: Icon(Icons.broken_image, color: Colors.grey[400]))),
+                errorBuilder: (ctx, err, stack) => Container(width: 100, color: Colors.grey[200], child: Icon(Icons.broken_image, color: Colors.grey[400])),
+              ),
             ),
             Expanded(
               child: Padding(

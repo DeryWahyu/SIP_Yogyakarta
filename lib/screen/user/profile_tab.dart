@@ -11,21 +11,25 @@ class ProfileTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profil Saya')),
-      body: Center(
-        child: ElevatedButton.icon(
-          icon: const Icon(Icons.logout),
-          label: const Text('Logout'),
-          onPressed: () {
-            authProvider.signOut();
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (ctx) => LoginPage()),
-              (route) => false,
-            );
-          },
-        ),
+    // --- HAPUS SCAFFOLD WRAPPER ---
+    // return Scaffold(
+    //   appBar: AppBar(title: const Text('Profil Saya')),
+    //   body: Center(...),
+    // );
+    // --- GANTI HANYA MERETURN CENTER ---
+    return Center(
+      child: ElevatedButton.icon(
+        icon: const Icon(Icons.logout),
+        label: const Text('Logout'),
+        onPressed: () {
+          authProvider.signOut();
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (ctx) => LoginPage()),
+            (route) => false,
+          );
+        },
       ),
     );
+    // --- AKHIR PERUBAHAN ---
   }
 }
