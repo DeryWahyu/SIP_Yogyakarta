@@ -1,5 +1,5 @@
 // lib/screen/home_page.dart
-
+import 'package:flutter/services.dart'; // <-- TAMBAHKAN IMPOR INI
 import 'package:flutter/material.dart';
 import 'user/home_tab.dart';
 import 'user/search_tab.dart';
@@ -80,6 +80,10 @@ class _HomePageState extends State<HomePage> {
           });
 
           return Scaffold(
+            // --- TAMBAHKAN BARIS INI ---
+            backgroundColor: const Color(0xFFF7F6F9),
+            // --- AKHIR TAMBAHAN ---
+  
             // Tampilkan AppBar yang sesuai
             appBar: _appBarOptions[_selectedIndex],
             // Tampilkan Body yang sesuai

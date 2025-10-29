@@ -113,64 +113,70 @@ class _FavoriteTabState extends State<FavoriteTab> {
       return const Center(child: Text('Anda harus login untuk melihat favorit.'));
     }
 
-    return StreamBuilder<DocumentSnapshot>(
-      stream: _firestore.collection('users').doc(_userId).snapshots(),
-      builder: (context, userSnapshot) {
-        if (userSnapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
-          return const Center(child: Text('Gagal memuat data user.'));
-        }
+    // --- TAMBAHAN: Bungkus dengan Container putih ---
+    return Container(
+      color: const Color(0xFFF7F6F9), // <-- Tambahkan warna latar belakang
+      child: StreamBuilder<DocumentSnapshot>(
+        stream: _firestore.collection('users').doc(_userId).snapshots(),
+        builder: (context, userSnapshot) {
+          // ... (isi StreamBuilder tetap sama) ...
+           if (userSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
+            return const Center(child: Text('Gagal memuat data user.'));
+          }
 
-        final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-        final List<dynamic> favoriteIds = userData['favorites'] ?? [];
+          final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+          final List<dynamic> favoriteIds = userData['favorites'] ?? [];
 
-        if (favoriteIds.isEmpty) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.favorite_border, size: 80, color: Colors.grey),
-                SizedBox(height: 16),
-                Text('Anda belum memiliki wisata favorit.', style: TextStyle(fontSize: 16, color: Colors.grey)),
-                Text('Tekan ikon Hati pada wisata untuk menambahkannya.', style: TextStyle(color: Colors.grey)),
-              ],
-            ),
-          );
-        }
-
-        return StreamBuilder<QuerySnapshot>(
-          stream: _firestore
-              .collection('tempat_wisata')
-              .where(FieldPath.documentId, whereIn: favoriteIds)
-              .snapshots(),
-          builder: (context, wisataSnapshot) {
-            if (wisataSnapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (!wisataSnapshot.hasData || wisataSnapshot.data!.docs.isEmpty) {
-              return const Center(child: Text('Data favorit tidak ditemukan.'));
-            }
-
-            final wisataDocs = wisataSnapshot.data!.docs;
-
-            return GridView.builder(
-              padding: const EdgeInsets.all(12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, 
-                childAspectRatio: 1.3, 
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
+          if (favoriteIds.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.favorite_border, size: 80, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('Anda belum memiliki wisata favorit.', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  Text('Tekan ikon Hati pada wisata untuk menambahkannya.', style: TextStyle(color: Colors.grey)),
+                ],
               ),
-              itemCount: wisataDocs.length,
-              itemBuilder: (context, index) {
-                return _buildWisataCard(context, doc: wisataDocs[index]);
-              },
             );
-          },
-        );
-      },
+          }
+
+          return StreamBuilder<QuerySnapshot>(
+            stream: _firestore
+                .collection('tempat_wisata')
+                .where(FieldPath.documentId, whereIn: favoriteIds)
+                .snapshots(),
+            
+            builder: (context, wisataSnapshot) {
+              if (wisataSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (!wisataSnapshot.hasData || wisataSnapshot.data!.docs.isEmpty) {
+                return const Center(child: Text('Data favorit tidak ditemukan.'));
+              }
+
+              final wisataDocs = wisataSnapshot.data!.docs;
+
+              return GridView.builder(
+                padding: const EdgeInsets.all(12),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, 
+                  childAspectRatio: 0.8, // Sesuaikan rasio jika perlu
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: wisataDocs.length,
+                itemBuilder: (context, index) {
+                  return _buildWisataCard(context, doc: wisataDocs[index]);
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

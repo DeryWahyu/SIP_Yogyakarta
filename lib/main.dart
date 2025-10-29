@@ -1,20 +1,22 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart'; // <-- Provider tetap dibutuhkan untuk Auth
 import 'firebase_options.dart';
 
-// Impor provider dan halaman-halaman
+// Impor provider
 import 'provider/auth_provider.dart';
+// import 'provider/theme_provider.dart'; // <-- HAPUS IMPOR INI
+
+// Impor halaman-halaman
 import 'screen/login_page.dart';
 import 'screen/register_page.dart';
 import 'screen/home_page.dart';
 import 'screen/dashboard_page.dart';
-
-// --- BARU: Impor halaman admin ---
 import 'screen/admin/kelola_wisata_page.dart';
 import 'screen/admin/kelola_artikel_page.dart';
 import 'screen/admin/kelola_pengguna_page.dart';
+import 'screen/user/edit_profile_page.dart'; // <-- TAMBAHKAN IMPOR INI
 
 
 void main() async {
@@ -24,10 +26,12 @@ void main() async {
   );
 
   runApp(
+    // --- KEMBALIKAN KE ChangeNotifierProvider BIASA ---
     ChangeNotifierProvider(
       create: (ctx) => AuthProvider(),
       child: const MyApp(),
     ),
+    // --- AKHIR PERUBAHAN ---
   );
 }
 
@@ -36,23 +40,34 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // --- HAPUS PANGGILAN themeProvider ---
+    // final themeProvider = Provider.of<ThemeProvider>(context);
+    // --- AKHIR PENGHAPUSAN ---
+
     return MaterialApp(
-      title: 'Flutter Auth Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      title: 'Info Wisata',
+      // --- KEMBALIKAN PENGATURAN TEMA DEFAULT ---
+      themeMode: ThemeMode.system, // Atau ThemeMode.light
+      theme: ThemeData( // Tema terang (default)
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green, brightness: Brightness.light),
         useMaterial3: true,
+        appBarTheme: const AppBarTheme( // Konsistensi AppBar terang
+           backgroundColor: Colors.white,
+           foregroundColor: Colors.black, // Warna ikon & teks di AppBar
+           elevation: 1.0,
+        ),
       ),
-      home: LoginPage(), // Halaman awal tetap Login
+      // darkTheme: ThemeData(...), // <-- HAPUS ATAU KOMENTARI darkTheme
+      // --- AKHIR PERUBAHAN TEMA ---
+      home: LoginPage(),
       routes: {
-        // Rute yang sudah ada
         '/register': (ctx) => RegisterPage(),
         '/home': (ctx) => HomePage(),
         '/dashboard': (ctx) => DashboardPage(),
-        
-        // --- BARU: Tambahkan rute admin ---
         '/admin-wisata': (ctx) => KelolaWisataPage(),
         '/admin-artikel': (ctx) => KelolaArtikelPage(),
         '/admin-pengguna': (ctx) => KelolaPenggunaPage(),
+        '/edit-profile': (ctx) => const EditProfilePage(),
       },
     );
   }

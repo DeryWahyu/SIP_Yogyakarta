@@ -17,50 +17,47 @@ class HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // --- HAPUS SCAFFOLD WRAPPER ---
-    // return Scaffold(
-    //   body: SingleChildScrollView(...),
-    // );
-    // --- GANTI HANYA MERETURN SINGLECHILDSCROLLVIEW ---
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
-            child: _buildHeaderCarousel(),
-          ),
-          _buildSearchBar(context),
+    // Membungkus SingleChildScrollView dengan Container berwarna putih
+    return Container(
+      color: const Color(0xFFF7F6F9),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
+              child: _buildHeaderCarousel(),
+            ),
+            _buildSearchBar(context),
             Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-            child: Text(
-              'Rekomendasi Wisata',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Text(
+                'Rekomendasi Wisata',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
                 ),
-            ),
-            ),
-          _buildWisataList(context),
-            Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-            child: Text(
-              'Artikel',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.green,
               ),
             ),
+            _buildWisataList(context),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Text(
+                'Artikel',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
             ),
-          _buildArtikelList(context),
-          const SizedBox(height: 100), 
-        ],
+            _buildArtikelList(context),
+            const SizedBox(height: 100),
+          ],
+        ),
       ),
     );
-    // --- AKHIR PERUBAHAN ---
   }
 
-  // ... (Fungsi _buildHeaderCarousel, _buildSearchBar, _buildSectionHeader tidak berubah) ...
   Widget _buildHeaderCarousel() {
     return CarouselSlider.builder(
       itemCount: headerImages.length,
@@ -83,28 +80,35 @@ class HomeTab extends StatelessWidget {
 
   Widget _buildSearchBar(BuildContext context) {
     return Padding(
-      // naikkan top padding sedikit agar search bar "turun ke bawah"
-      padding: const EdgeInsets.fromLTRB(20, 40, 20, 16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(35),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
+      padding: const EdgeInsets.fromLTRB(20, 30, 20, 16),
+      child: GestureDetector(
+        onTap: () {
+          onNavTapped(1); 
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(35),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: AbsorbPointer(
+            child: TextField(
+              enabled: false,
+              decoration: InputDecoration(
+                hintText: 'Cari Tempat Wisata Favoritmu',
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                border: InputBorder.none,
+                icon: Icon(Icons.search, color: Colors.grey[600]),
+              ),
             ),
-          ],
-        ),
-        child: const TextField(
-          decoration: InputDecoration(
-            hintText: 'Cari Tempat Wisata Favoritmu',
-            hintStyle: TextStyle(color: Colors.green),
-            border: InputBorder.none,
-            icon: Icon(Icons.search, color: Colors.green),
           ),
         ),
       ),
@@ -112,7 +116,6 @@ class HomeTab extends StatelessWidget {
   }
 
   Widget _buildWisataList(BuildContext context) {
-    // ... (Fungsi _buildWisataList TIDAK BERUBAH) ...
     return SizedBox(
       height: 220, 
       child: StreamBuilder<QuerySnapshot>(
@@ -147,7 +150,6 @@ class HomeTab extends StatelessWidget {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      // Kita teruskan fungsi onNavTapped
                       builder: (ctx) => UserWisataDetailPage(doc: doc, onNavTapped: onNavTapped),
                     ),
                   );
@@ -161,7 +163,6 @@ class HomeTab extends StatelessWidget {
   }
 
   Widget _buildArtikelList(BuildContext context) {
-    // ... (Fungsi _buildArtikelList TIDAK BERUBAH) ...
     return SizedBox(
       height: 160, 
       child: StreamBuilder<QuerySnapshot>(
@@ -206,7 +207,6 @@ class HomeTab extends StatelessWidget {
   }
   
   Widget _buildWisataCard(BuildContext context, {required String title, required String description, required String imageUrl, required VoidCallback onTap}) {
-    // ... (Fungsi _buildWisataCard TIDAK BERUBAH) ...
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -262,7 +262,6 @@ class HomeTab extends StatelessWidget {
   }
 
   Widget _buildArtikelCard(BuildContext context, {required String title, required String description, required String imageUrl, required VoidCallback onTap}) {
-    // ... (Fungsi _buildArtikelCard TIDAK BERUBAH) ...
     return GestureDetector(
       onTap: onTap,
       child: Container(

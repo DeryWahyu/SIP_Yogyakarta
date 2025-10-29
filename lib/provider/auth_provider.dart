@@ -61,6 +61,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   String _mapErrorToMessage(String code) {
+    // --- TAMBAHAN KODE ERROR UNTUK RE-AUTH & UPDATE ---
     switch (code) {
       case 'email-already-in-use':
         return 'Email ini sudah terdaftar. Silakan gunakan email lain.';
@@ -69,12 +70,28 @@ class AuthProvider extends ChangeNotifier {
       case 'invalid-email':
         return 'Format email tidak valid.';
       case 'user-not-found':
-        return 'Email tidak ditemukan.';
+        // Pesan ini bisa muncul saat re-auth jika user dihapus
+        return 'Pengguna tidak ditemukan.';
       case 'wrong-password':
         return 'Password salah.';
+      case 'requires-recent-login':
+        // Error ini muncul jika user mencoba ganti email/pass tanpa re-auth baru-baru ini
+        return 'Operasi ini memerlukan login ulang. Silakan masukkan password Anda saat ini.';
+      case 'user-mismatch':
+         // Error ini bisa muncul saat re-auth
+        return 'Kredensial tidak sesuai dengan pengguna yang login.';
+      case 'invalid-credential':
+        // Error umum saat re-auth
+        return 'Kredensial tidak valid.';
+      // Tambahkan case lain jika diperlukan
       default:
+        // Jika tidak dikenali, coba tampilkan pesan asli dari Firebase
+        if (code.isNotEmpty) {
+          return 'Error: $code';
+        }
         return 'Terjadi error. Silakan coba lagi.';
     }
+    // --- AKHIR TAMBAHAN KODE ERROR ---
   }
 
   // --- FUNGSI UNTUK LOGIN ---
@@ -137,6 +154,12 @@ class AuthProvider extends ChangeNotifier {
         password: password,
       );
 
+      // --- TAMBAHAN: Update display name di Auth ---
+      // Ini opsional tapi bagus agar nama muncul di tempat lain
+      await userCredential.user?.updateDisplayName(nama);
+      // --- AKHIR TAMBAHAN ---
+
+
       // 2. Jika sukses, simpan data user ke Firestore
       if (userCredential.user != null) {
         await _firestore.collection('users').doc(userCredential.user!.uid).set({
@@ -160,4 +183,136 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signOut() async {
     await _fireAuth.signOut();
   }
+
+  // =========================================================
+  // --- TAMBAHAN FUNGSI BARU UNTUK EDIT PROFIL ---
+  // =========================================================
+
+  // 1. Fungsi untuk Re-autentikasi (memverifikasi password saat ini)
+  Future<bool> reauthenticateUser({
+    required String currentPassword,
+    required Function(String) onError,
+  }) async {
+    _setLoading(true);
+    bool success = false;
+    User? user = _fireAuth.currentUser;
+
+    if (user != null && user.email != null) {
+      // Buat kredensial dengan email dan password saat ini
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword, // <-- Jangan di-trim
+      );
+      try {
+        // Coba re-autentikasi
+        await user.reauthenticateWithCredential(credential);
+        success = true; // Berhasil
+      } on FirebaseAuthException catch (e) {
+        onError(_mapErrorToMessage(e.code)); // Tampilkan error jika password salah, dll.
+      } catch (e) {
+        onError("Terjadi kesalahan saat re-autentikasi.");
+        debugPrint("Re-auth Error: $e"); // Cetak error detail
+      }
+    } else {
+      onError("Tidak dapat menemukan pengguna yang sedang login.");
+    }
+    _setLoading(false);
+    return success;
+  }
+
+  // 2. Fungsi untuk Update Email (setelah re-autentikasi)
+  Future<bool> updateUserEmail({
+    required String newEmail,
+    required Function(String) onError,
+  }) async {
+    _setLoading(true);
+    bool success = false;
+    User? user = _fireAuth.currentUser;
+
+    if (user != null) {
+      try {
+        // Update email di Firebase Authentication
+        await user.verifyBeforeUpdateEmail(newEmail); // <-- Lebih aman pakai verify
+
+        // Update email di Firestore juga
+        await _firestore.collection('users').doc(user.uid).update({
+          'email': newEmail,
+        });
+        success = true; // Berhasil
+        // Catatan: User mungkin perlu verifikasi email baru
+        onError("Verifikasi email telah dikirim ke alamat baru Anda. Silakan cek email."); // Beri info
+
+      } on FirebaseAuthException catch (e) {
+        onError(_mapErrorToMessage(e.code)); // Tangani error (email sudah dipakai, dll.)
+      } catch (e) {
+        onError("Terjadi kesalahan saat memperbarui email.");
+        debugPrint("Update Email Error: $e");
+      }
+    } else {
+      onError("Tidak dapat menemukan pengguna yang sedang login.");
+    }
+    _setLoading(false);
+    return success;
+  }
+
+  // 3. Fungsi untuk Update Password (setelah re-autentikasi)
+  Future<bool> updateUserPassword({
+    required String newPassword,
+    required Function(String) onError,
+  }) async {
+    _setLoading(true);
+    bool success = false;
+    User? user = _fireAuth.currentUser;
+
+    if (user != null) {
+      try {
+        // Update password di Firebase Authentication
+        await user.updatePassword(newPassword); // <-- Jangan di-trim
+        success = true; // Berhasil
+      } on FirebaseAuthException catch (e) {
+        onError(_mapErrorToMessage(e.code)); // Tangani error (password lemah, dll.)
+      } catch (e) {
+        onError("Terjadi kesalahan saat memperbarui password.");
+        debugPrint("Update Password Error: $e");
+      }
+    } else {
+      onError("Tidak dapat menemukan pengguna yang sedang login.");
+    }
+    _setLoading(false);
+    return success;
+  }
+  
+  // 4. Fungsi untuk Update Nama (tidak perlu re-auth, hanya Firestore)
+  Future<bool> updateUserName({
+    required String newName,
+    required Function(String) onError,
+  }) async {
+      _setLoading(true);
+      bool success = false;
+      User? user = _fireAuth.currentUser;
+
+      if (user != null) {
+        try {
+          // --- TAMBAHAN: Update display name di Auth juga ---
+          await user.updateDisplayName(newName);
+          // --- AKHIR TAMBAHAN ---
+
+          // Update nama di Firestore
+          await _firestore.collection('users').doc(user.uid).update({
+            'nama': newName,
+          });
+          success = true; // Berhasil
+        } catch (e) {
+          onError("Terjadi kesalahan saat memperbarui nama.");
+          debugPrint("Update Name Error: $e");
+        }
+      } else {
+        onError("Tidak dapat menemukan pengguna yang sedang login.");
+      }
+       _setLoading(false);
+       return success;
+  }
+  // ============================================
+  // --- AKHIR TAMBAHAN FUNGSI EDIT PROFIL ---
+  // ============================================
 }

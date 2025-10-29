@@ -73,6 +73,7 @@ class _LoginPageState extends State<LoginPage> {
     final formWidth = math.min(screenWidth * 0.86, 420.0);
 
     return Scaffold(
+      backgroundColor: Colors.white, // <-- Tambahkan ini untuk background putih
       body: Center(
         child: SingleChildScrollView(
           // Perbesar padding horizontal supaya tidak mepet
