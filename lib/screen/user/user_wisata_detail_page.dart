@@ -13,10 +13,10 @@ class UserWisataDetailPage extends StatefulWidget {
   final Function(int) onNavTapped;
 
   const UserWisataDetailPage({
-    Key? key,
+    super.key,
     required this.doc,
     required this.onNavTapped,
-  }) : super(key: key);
+  });
 
   @override
   State<UserWisataDetailPage> createState() => _UserWisataDetailPageState();
@@ -291,7 +291,7 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF2E7D32),
+                              color: Color(0xFF2E7D32),
                             ),
                           ),
                         ],

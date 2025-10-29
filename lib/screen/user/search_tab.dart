@@ -174,7 +174,7 @@ class _SearchTabState extends State<SearchTab> {
           // Cari field yang >= query dan < query + karakter terakhir + 1
           // Ini trik untuk simulasi 'startsWith' di Firestore
           .where(fieldToSearch, isGreaterThanOrEqualTo: _searchQuery)
-          .where(fieldToSearch, isLessThanOrEqualTo: '${_searchQuery}\uf8ff')
+          .where(fieldToSearch, isLessThanOrEqualTo: '$_searchQuery\uf8ff')
           // --- BATAS LOGIKA PENCARIAN ---
           .snapshots(),
       builder: (context, snapshot) {
