@@ -115,7 +115,7 @@ class _FavoriteTabState extends State<FavoriteTab> {
 
     // --- TAMBAHAN: Bungkus dengan Container putih ---
     return Container(
-      color: const Color(0xFFF7F6F9), // <-- Tambahkan warna latar belakang
+      color: Colors.white, // <-- Tambahkan warna latar belakang
       child: StreamBuilder<DocumentSnapshot>(
         stream: _firestore.collection('users').doc(_userId).snapshots(),
         builder: (context, userSnapshot) {

@@ -1,4 +1,3 @@
- // lib/screen/user/profile_tab.dart // Untuk File (jika menggunakan image_picker versi lama)
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
@@ -8,7 +7,6 @@ import 'package:cloudinary_public/cloudinary_public.dart'; // Untuk upload
 import '../../provider/auth_provider.dart';
 // import '../../provider/theme_provider.dart'; // <-- IMPOR INI SUDAH DIHAPUS
 import '../login_page.dart';
-import 'edit_profile_page.dart'; // <-- Impor halaman edit profil
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
@@ -99,7 +97,7 @@ class _ProfileTabState extends State<ProfileTab> {
 
         // UI Profil
         return Container( // Bungkus dengan Container putih
-          color: Theme.of(context).scaffoldBackgroundColor, // Gunakan warna background tema
+          color: Colors.white, 
           child: ListView( // Gunakan ListView agar bisa scroll jika konten banyak
             padding: const EdgeInsets.all(16.0),
             children: [
@@ -164,7 +162,7 @@ class _ProfileTabState extends State<ProfileTab> {
                     Navigator.of(context).pushNamed('/edit-profile');
                   },
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Theme.of(context).primaryColor),
+                    side: BorderSide(color: Colors.green.shade800, width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),

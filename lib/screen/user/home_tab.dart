@@ -19,7 +19,7 @@ class HomeTab extends StatelessWidget {
   Widget build(BuildContext context) {
     // Membungkus SingleChildScrollView dengan Container berwarna putih
     return Container(
-      color: const Color(0xFFF7F6F9),
+      color: Colors.white,
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,7 +35,7 @@ class HomeTab extends StatelessWidget {
                 'Rekomendasi Wisata',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.green,
+                  color: Colors.green.shade800,
                 ),
               ),
             ),
@@ -46,7 +46,7 @@ class HomeTab extends StatelessWidget {
                 'Artikel',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.green,
+                  color: Colors.green.shade800,
                 ),
               ),
             ),

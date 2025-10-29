@@ -55,7 +55,7 @@ class _SearchTabState extends State<SearchTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F6F9), // Background putih
+      backgroundColor: Colors.white, // Background putih
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0, // Hapus bayangan
@@ -86,7 +86,7 @@ class _SearchTabState extends State<SearchTab> {
       margin: const EdgeInsets.symmetric(horizontal: 16.0), // Beri jarak kiri & kanan
       height: 45, // Tinggi search bar
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F6F9), // Background putih
+        color: Colors.white, // Background putih
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
@@ -127,7 +127,7 @@ class _SearchTabState extends State<SearchTab> {
               }
             },
             selectedColor: Colors.green.shade100,
-            checkmarkColor: Colors.green.shade700,
+            checkmarkColor: Colors.green.shade800,
           ),
           const SizedBox(width: 8),
           FilterChip(
@@ -139,8 +139,8 @@ class _SearchTabState extends State<SearchTab> {
                  if (_searchQuery.isNotEmpty) _performSearch(_searchQuery);
               }
             },
-            selectedColor: Colors.orange.shade100,
-            checkmarkColor: Colors.orange.shade700,
+            selectedColor: Colors.green.shade100,
+            checkmarkColor: Colors.green.shade800,
           ),
         ],
       ),
@@ -220,10 +220,12 @@ class _SearchTabState extends State<SearchTab> {
               subtitle = data['deskripsi'] ?? ''; // Tampilkan deskripsi singkat
               imageUrl = data['imageUrl'] ?? '';
             }
-
             return ListTile(
               leading: imageUrl.isNotEmpty
-                  ? Image.network(imageUrl, width: 50, height: 50, fit: BoxFit.cover)
+                    ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Image.network(imageUrl, width: 50, height: 50, fit: BoxFit.cover),
+                    )
                   : Container(width: 50, height: 50, color: Colors.grey[200], child: const Icon(Icons.image_not_supported)),
               title: Text(title),
               subtitle: Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),

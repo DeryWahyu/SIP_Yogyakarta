@@ -125,15 +125,16 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
     // --- PERUBAHAN DI SINI: Bungkus Scaffold dengan AnnotatedRegion ---
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
-        statusBarColor: const Color(0xFFF7F6F9), // Warna background Status Bar
-        statusBarIconBrightness: Brightness.dark, // Warna ikon (jam, sinyal) gelap
-        statusBarBrightness: Brightness.light, // Untuk iOS (ikon gelap)
+        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F6F9),
+        backgroundColor: Colors.white,
         appBar: AppBar(
           // Hapus systemOverlayStyle dari sini jika ada
-          backgroundColor: const Color(0xFFF7F6F9),
+          backgroundColor: Colors.white,
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -148,7 +149,7 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
                     )
                   : Icon(
                       _isFavorited ? Icons.favorite : Icons.favorite_border,
-                      color: _isFavorited ? Colors.green : Colors.black,
+                      color: _isFavorited ? const Color(0xFF2E7D32) : Colors.black,
                     ),
               onPressed: _toggleFavorite,
             ),
@@ -159,13 +160,13 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 8.0),
+                padding: const EdgeInsets.only(top: 10.0),
                 child: Text(
                   nama,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: const Color(0xFF2E7D32),
                   ),
                 ),
               ),
@@ -185,7 +186,7 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
                               imageUrls[index],
                               fit: BoxFit.cover,
                               width: double.infinity,
-                              // Tambahkan loading builder untuk gambar carousel
+                              // Tambahkan loading builder für gambar carousel
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return const Center(child: CircularProgressIndicator());
@@ -213,13 +214,13 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: imageUrls.asMap().entries.map((entry) {
                           return Container(
-                            width: 8.0,
-                            height: 8.0,
+                            width: 10.0,
+                            height: 10.0,
                             margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 4.0),
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.black.withOpacity(_currentImageIndex == entry.key ? 0.9 : 0.4),
-                            ),
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF2E7D32).withOpacity(_currentImageIndex == entry.key ? 0.9 : 0.4),
+                              ),
                           );
                         }).toList(),
                       ),
@@ -242,40 +243,57 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionTitle('Deskripsi'),
-                    Text(deskripsi, style: const TextStyle(color: Colors.black87, fontSize: 14, height: 1.5), textAlign: TextAlign.justify,),
+                    Text(
+                      'Deskripsi',
+                      style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF2E7D32),
+                      ),
+                    ),
+                    Text(deskripsi, style: const TextStyle(color: Color.fromARGB(221, 56, 56, 56), fontSize: 14, height: 1.5), textAlign: TextAlign.justify,),
 
                     const SizedBox(height: 16),
                     Row(
-                      children: [
+                        children: [
                         Transform.translate(
                           offset: const Offset(0, -4),
-                          child: const Icon(Icons.confirmation_num, color: Colors.black87),
+                          child: Icon(Icons.confirmation_num, color: const Color(0xFF2E7D32)),
                         ),
                         const SizedBox(width: 8),
-                        _buildSectionTitle('Harga Tiket'),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Text(
+                          'Harga Tiket',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF2E7D32),
+                          ),
+                          ),
+                        ),
                       ],
                       ),
                     Transform.translate(
                       offset: const Offset( 35, 0),
-                      child: Text('Rp. $harga', style: const TextStyle(fontSize: 16, color: Colors.green)),
+                      child: Text('Rp. $harga', style: const TextStyle(fontSize: 16, color: Color.fromARGB(255, 56, 56, 56))),
                     ),
 
                     const SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),
                       child: Row(
-                        children: const [
-                          Icon(Icons.schedule_sharp, color: Colors.black87, size: 24),
-                        SizedBox(width: 8),
-                        Text(
-                          'Hari & Jam Operasional',
-                          style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                        children: [
+                          Icon(Icons.schedule_sharp, color: const Color(0xFF2E7D32), size: 24),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Hari & Jam Operasional',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF2E7D32),
+                            ),
                           ),
-                        ),
                         ],
                       ),
                       ),
@@ -293,13 +311,20 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
 
                     const SizedBox(height: 16),
                     Row(
-                      children: [
+                        children: [
                         Transform.translate(
-                          offset: const Offset(0, -4),
-                          child: const Icon(Icons.location_on, color: Colors.black87),
+                          offset: const Offset(0, -0),
+                          child: Icon(Icons.location_on, color: Colors.green.shade800),
                         ),
                         const SizedBox(width: 8),
-                        _buildSectionTitle('Lokasi'),
+                        Text(
+                          'Lokasi',
+                          style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green.shade800,
+                          ),
+                        ),
                       ],
                     ),
                     Padding(
@@ -322,11 +347,11 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade700,
+                          backgroundColor: Colors.green.shade800,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           textStyle: const TextStyle(
                             fontSize: 16,
@@ -356,16 +381,6 @@ class _UserWisataDetailPageState extends State<UserWisataDetailPage> {
   }
 
   // ... (_buildSectionTitle dan _buildInfoRow tidak berubah) ...
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-      ),
-    );
-  }
-
   Widget _buildInfoRow(IconData icon, String text) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,

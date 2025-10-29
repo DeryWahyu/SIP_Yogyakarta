@@ -81,7 +81,7 @@ class _HomePageState extends State<HomePage> {
 
           return Scaffold(
             // --- TAMBAHKAN BARIS INI ---
-            backgroundColor: const Color(0xFFF7F6F9),
+            backgroundColor: Colors.white,
             // --- AKHIR TAMBAHAN ---
   
             // Tampilkan AppBar yang sesuai
