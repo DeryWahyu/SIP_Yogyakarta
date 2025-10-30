@@ -402,11 +402,12 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
 
   @override
   Widget build(BuildContext context) {
-    // ... (Fungsi build() TIDAK BERUBAH) ...
+    // ... (Fungsi build() TIDAK BERUBAH selain warna yang diminta) ...
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kelola Tempat Wisata'),
+        title: const Text('Kelola Tempat Wisata', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.green.shade700,
+        iconTheme: const IconThemeData(color: Colors.white), // tombol kembali jadi putih
       ),
       body: _buildWisataList(),
       floatingActionButton: FloatingActionButton(
@@ -414,7 +415,7 @@ class _KelolaWisataPageState extends State<KelolaWisataPage> {
           _showAddFormSheet(context);
         },
         backgroundColor: Colors.green.shade700,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white), // ikon + jadi putih
       ),
     );
   }
